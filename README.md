@@ -14,12 +14,6 @@ The purpose of this app is to provide an easy way for individuals to locate publ
 - **User Reviews**: Users can leave reviews on restrooms and see what others have to say about the facilities.
 - **Premium Upgrade**: Option to upgrade to a premium membership for exclusive features.
 
-## Screenshots
-
-### App Overview
-
-![App Screenshot](assets/screenshots/app_screenshot.png)  <!-- Replace with your screenshot path -->
-
 ## Pages and Screens
 
 1. **HomeScreen**:
@@ -45,12 +39,3 @@ This project uses the following dependencies:
 - **Flutter**: For building the cross-platform mobile app.
 - **Material Design**: For the app's UI components, such as buttons, navigation bar, and icons.
 
-## How to Run
-
-1. Clone this repository to your local machine.
-2. Install Flutter SDK from [flutter.dev](https://flutter.dev).
-3. Navigate to the project directory in your terminal.
-4. Run the app on an emulator or a connected device:
-
-```bash
-flutter run

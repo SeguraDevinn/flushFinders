@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "401017794068",
+    "project_id": "flush-finders",
+    "storage_bucket": "flush-finders.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:401017794068:android:ca359db829332e86c28101",
+        "android_client_info": {
+          "package_name": "com.example.flush_finders"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxK63lEz-oZPZhgHHNHgiSUSGh43uKZuE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

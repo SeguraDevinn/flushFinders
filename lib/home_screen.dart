@@ -15,7 +15,7 @@ class _HomePageState extends State<HomeScreen> {
   final List<Widget> _pages = [
     const PlaceHolderWidget('Finder Page'),
     const PlaceHolderWidget("Rewards Page"),
-    const ProfilePage(),
+     ProfilePage(),
   ];
 
   @override

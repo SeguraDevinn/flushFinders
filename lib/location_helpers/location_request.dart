@@ -1,50 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_radar/flutter_radar.dart';
 
-//This function is the handler for getting permission from the user
-class PermissionHandler {
-  static Future<bool> requestLocationPermission(BuildContext context) async {
-    PermissionStatus status = await Permission.location.status;
+class LocationHandler {
+  static Future<void> checkAndRequestPermissions() async {
+    String? status = await Radar.getPermissionsStatus();
 
-    if (status.isDenied || status.isRestricted) {
-      final newStatus = await Permission.location.request();
-      if (newStatus.isGranted) {
-        return true;
+    if (status == 'DENIED' || status == 'NOT_DETERMINED') {
+      bool background = false;
+      String newStatus = await Radar.requestPermissions(background);
+
+      if (newStatus == 'GRANTED_FOREGROUND' || newStatus == 'GRANTED_BACKGROUND') {
+        print('location permissions granted');
       } else {
-        return false;
+        print('Location permission denied');
       }
-    } else if (status.isPermanentlyDenied) {
-      _showSettingDialog(context);
-      return false;
     } else {
-      return true;
+      print('Permission already granted : $status');
     }
-  }
-
-  static void _showSettingDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Location Permission Required'),
-          content: const Text(
-            'Location permission is permanently denied. Please open app settings to enable it.'
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                openAppSettings();
-                Navigator.pop(context);
-              },
-              child: const Text('Open Settings'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            )
-          ],
-        );
-      },
-    );
   }
 }

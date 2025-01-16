@@ -3,8 +3,12 @@ import 'placeholder_widget.dart';
 import 'profile_page.dart';
 import 'location_helpers/location_request.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_radar/flutter_radar.dart';
 
 class HomeScreen extends StatefulWidget {
+
   const HomeScreen({super.key});
 
   @override
@@ -20,12 +24,13 @@ class _HomePageState extends State<HomeScreen> {
     ProfilePage(),
   ];
 
+
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds:1),() {
-      _checkLocationPermission();
-    });
+    LocationHandler.checkAndRequestPermissions();
+    Radar.startTracking('continuous');
   }
 
   Future<void> _checkLocationPermission() async {

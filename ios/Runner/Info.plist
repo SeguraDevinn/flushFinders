@@ -22,12 +22,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-
+	<key>RadarPublishableKey</key>
+	<string>prj_test_pk_8a63cc917387e0f16a796e8a61b3eb0c3660ef6f</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need your location to help you find nearby restrooms.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>We need your location to help you find nearby restrooms.</string>
-
+	<string>We need your location to help you find nearby restrooms.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to help you find nearby restrooms.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

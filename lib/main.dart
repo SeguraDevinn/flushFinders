@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_helpers/firebase_options.dart';
 import 'home_screen.dart';
+import 'package:flutter_radar/flutter_radar.dart';
 
 
 
@@ -12,6 +13,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // Initialize Firebase with options
   );
+  //initialize Radar
+  Radar.initialize("prj_test_pk_8a63cc917387e0f16a796e8a61b3eb0c3660ef6f");
+  
   runApp(const MyApp());
 }
 

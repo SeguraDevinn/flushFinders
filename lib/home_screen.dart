@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'placeholder_widget.dart';
-import 'profile_page.dart';
 import 'location_helpers/location_request.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_radar/flutter_radar.dart';
+import 'profile_page.dart';
+import 'finder.dart';
 
 class HomeScreen extends StatefulWidget {
 
@@ -19,7 +20,7 @@ class _HomePageState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-  const PlaceHolderWidget("Rewards Page"),
+    FinderPage(),
     const PlaceHolderWidget("Rewards Page"),
     ProfilePage(),
   ];
@@ -30,7 +31,7 @@ class _HomePageState extends State<HomeScreen> {
   void initState() {
     super.initState();
     LocationHandler.checkAndRequestPermissions();
-    Radar.startTracking('continuous');
+    Radar.startTracking('responsive');
   }
 
   Future<void> _checkLocationPermission() async {

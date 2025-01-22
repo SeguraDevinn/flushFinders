@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_helpers/firebase_options.dart';
 import 'home_screen.dart';
 import 'package:flutter_radar/flutter_radar.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 
@@ -13,10 +14,23 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // Initialize Firebase with options
   );
+
+  await dotenv.load();
   //initialize Radar
-  Radar.initialize("prj_test_pk_8a63cc917387e0f16a796e8a61b3eb0c3660ef6f");
-  
+  String radarApiKey = dotenv.env['RADAR_API_KEY'] ?? '';
+  Radar.initialize(radarApiKey);
+  setUserID();
   runApp(const MyApp());
+}
+
+void setUserID() {
+  User? user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    String userId = user.uid;
+    Radar.setUserId(userId);
+  } else {
+    print("User id not found");
+  }
 }
 
 class MyApp extends StatelessWidget {

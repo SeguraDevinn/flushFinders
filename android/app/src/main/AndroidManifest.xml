@@ -7,6 +7,15 @@
         android:label="flush_finders"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- This is added for radar and stores the api key-->
+        <meta-data
+            android:name="com.radar.sdk.publishablekey"
+            android:value="prj_test_pk_8a63cc917387e0f16a796e8a61b3eb0c3660ef6f" />
+        <!-- This if for the google maps api key-->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBnebMN9zp1L2BwMfcYwHn1HvbuG4MKDLU" />
+
         <meta-data android:name="flutterEmbedding" android:value="2"/>
         <activity
             android:name=".MainActivity"

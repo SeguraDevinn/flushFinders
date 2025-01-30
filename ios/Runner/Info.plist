@@ -22,12 +22,25 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-
+	<key>RadarPublishableKey</key>
+	<string>prj_test_pk_8a63cc917387e0f16a796e8a61b3eb0c3660ef6f</string>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+	<key>GMSApiKey</key>
+	<string>AIzaSyBnebMN9zp1L2BwMfcYwHn1HvbuG4MKDLU</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need your location to help you find nearby restrooms.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>We need your location to help you find nearby restrooms.</string>
-
+	<string>We need your location to help you find nearby restrooms.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to help you find nearby restrooms.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to help find nearby restrooms.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Permission to access photo library to upload pictures from your phone.</string>
+	<key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

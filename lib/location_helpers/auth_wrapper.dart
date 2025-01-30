@@ -1,5 +1,4 @@
-import 'location_request.dart';
-import 'package:flutter_radar/flutter_radar.dart';
+
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -13,13 +12,6 @@ class AuthWrapper extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasData) {
-          Radar.setUserId(snapshot.data!.uid);
-          Radar.setDescription("Logged in user");
-          Radar.setMetadata({
-            'email': snapshot.data!.email ?? 'unknown',
-            'loggedIn' : true.toString(),
-          });
-
           return const HomeScreen();
         } else {
           return LoginPage();

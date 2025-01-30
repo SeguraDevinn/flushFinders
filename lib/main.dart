@@ -4,8 +4,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_helpers/firebase_options.dart';
 import 'home_screen.dart';
-import 'package:flutter_radar/flutter_radar.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 
 
@@ -18,16 +18,22 @@ void main() async {
   await dotenv.load();
   //initialize Radar
   String radarApiKey = dotenv.env['RADAR_API_KEY'] ?? '';
-  Radar.initialize(radarApiKey);
   setUserID();
+  await _requestUserLocation();
   runApp(const MyApp());
 }
 
+Future<void> _requestUserLocation() async {
+  PermissionStatus status = await Permission.location.request();
+
+  if (status.isGranted) {
+  } else {
+  }
+}
 void setUserID() {
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
     String userId = user.uid;
-    Radar.setUserId(userId);
   } else {
     print("User id not found");
   }

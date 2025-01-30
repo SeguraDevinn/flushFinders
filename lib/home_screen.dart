@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'placeholder_widget.dart';
 import 'location_helpers/location_request.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_radar/flutter_radar.dart';
 import 'profile_page.dart';
 import 'finder.dart';
 
@@ -30,17 +27,8 @@ class _HomePageState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    LocationHandler.checkAndRequestPermissions();
-    Radar.startTracking('responsive');
-  }
 
-  Future<void> _checkLocationPermission() async {
-    PermissionStatus isPermissionGranted = await Permission.location.request();
-    if (isPermissionGranted.isGranted) {
-      print("Location is enabled");
-    } else {
-      print("Location is not enabled");
-    }
+
   }
 
   @override

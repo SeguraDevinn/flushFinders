@@ -31,9 +31,10 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login successful!')),
         );
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen())
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+            (route) => false,
         );
       } on FirebaseAuthException catch (e) {
         String message;

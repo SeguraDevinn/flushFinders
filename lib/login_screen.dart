@@ -33,8 +33,9 @@ class _LoginPageState extends State<LoginPage> {
         );
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-            (route) => false,
+          MaterialPageRoute(
+              builder: (context) => HomeScreen()),
+                (route) => false
         );
       } on FirebaseAuthException catch (e) {
         String message;

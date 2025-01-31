@@ -23,6 +23,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       try {
+
+        bool usernameExisits = await _checkUsernameExists(_username.text.trim());
+        if (usernameExisits) {
+          _showSnackBar('Username already in use. Please choose another.');
+          return;
+        }
         UserCredential userCredential = await _auth
             .createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
@@ -37,14 +43,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
           await _addUserToFirestore(user);
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration successful!')),
-        );
+        _showSnackBar('Resgistration successful!');
 
-        //TODO: Change this to enter the app, also change so that the info used in the profile page is the users name and info.
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+
+        Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomeScreen()),
+                (route) => false
         );
       } on FirebaseAuthException catch(e) {
         _handleAuthError(e);
@@ -53,18 +59,24 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   Future<void> _addUserToFirestore(User user) async {
-    DocumentReference userDoc = _firestore.collection('Users').doc(user.uid);
-
-    // checks if the user already exists
-    if (!(await userDoc.get()).exists) {
-      await userDoc.set({
-        'username': _username.text.trim(),
-        'email': _emailController.text.trim(),
-        'dateCreated': FieldValue.serverTimestamp(),
-        'reviewCount': 0,
-      });
+    //sets the user in 'Users' and inserts using information provided
+    await _firestore.collection('Users').doc(user.uid).set({
+      'username': _username.text.trim(),
+      'email': _emailController.text.trim(),
+      'dateCreated': FieldValue.serverTimestamp(),
+      'reviewCount': 0,
+    });
   }
-}
+
+
+  Future<bool> _checkUsernameExists(String username) async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('Users')
+        .where('username', isEqualTo: username)
+        .get();
+    return querySnapshot.docs.isNotEmpty;
+  }
+
   void _handleAuthError(FirebaseAuthException e) {
     String message;
     switch (e.code) {
@@ -77,6 +89,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
       default:
         message = 'An error occurred. Please try again.';
     }
+    _showSnackBar(message);
+  }
+
+  void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: Colors.black54),
     );

@@ -16,7 +16,7 @@ class FinderPage extends StatefulWidget{
   State<FinderPage> createState() => _FinderPageState();
 }
 
-class _FinderPageState extends State<FinderPage> {
+class _FinderPageState extends State<FinderPage> with AutomaticKeepAliveClientMixin {
   final RestroomService _restroomService = RestroomService();
   late GoogleMapController mapController;
   late LatLng _currentPosition;
@@ -26,44 +26,59 @@ class _FinderPageState extends State<FinderPage> {
   late loc.LocationData _locationData;
   late loc.Location location;
   Set<Marker> _markers = {};
+  bool _dataLoaded = false;
 
-
-
-
+/*
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
     _moveToUserLocation();
   }
 
+ */
 
   @override
   void initState() {
     super.initState();
     location = loc.Location();
+    // check to see if the data is already loaded, if it is then skip, else init
+    if (!_dataLoaded) {
+      _initializeMapData();
+    }
+  }
 
+  Future<void> _initializeMapData() async {
     _tempLocationSet();
-    RestroomService.loadRestroomsFromAPI();
-    _loadRestroomsToMap();
-      //_requestLocation();
+    //await _requestLocation();
+    await RestroomService.loadRestroomsFromAPI();
+    await _loadRestroomsToMap();
+    _dataLoaded = true;
   }
 
   void _tempLocationSet() {
+    //set the state of the maplaoding and set current pos
     _mapIsLoading = false;
     _currentPosition = LatLng(33.93174, -117.425221);
   }
 
   Future<void> _loadRestroomsToMap() async {
     final restrooms = await RestroomService.getRestrooms();
-    setState(() {
-      _markers = restrooms.map((restroom) {
-        return Marker(
-          markerId: MarkerId(restroom['id'].toString()),
-          position: LatLng(restroom['latitude'], restroom['longitude']),
-          infoWindow: InfoWindow(title: restroom['name'], snippet: restroom['comment']),
-
+    Set<String> existingRestroomIds = _markers.map((marker) => marker.markerId.value).toSet();
+    if (mounted) {
+      setState(() {
+        _markers.addAll(
+          restrooms.where((restroom) => !existingRestroomIds.contains(restroom['id'].toString()))
+              .map((restroom) {
+            return Marker(
+              markerId: MarkerId(restroom['id'].toString()),
+              position: LatLng(restroom['latitude'], restroom['longitude']),
+              infoWindow: InfoWindow(
+                  title: restroom['name'],
+                  snippet: restroom['comment']),
+            );
+          }),
         );
-      }).toSet();
-    });
+      });
+    }
   }
 
   Future<void> _requestLocation() async {
@@ -84,10 +99,10 @@ class _FinderPageState extends State<FinderPage> {
       geo.Position position = await geo.Geolocator.getCurrentPosition(
         desiredAccuracy: geo.LocationAccuracy.best,
       );
-      setState(() {
-        _currentPosition = LatLng(position.latitude, position.longitude);
-        _mapIsLoading = false;
-      });
+
+          _currentPosition = LatLng(position.latitude, position.longitude);
+          _mapIsLoading = false;
+
       mapController.animateCamera(CameraUpdate.newLatLng(_currentPosition),
       );
     } catch (e) {
@@ -96,28 +111,36 @@ class _FinderPageState extends State<FinderPage> {
   }
 
   void _moveToUserLocation() {
-    mapController.animateCamera(CameraUpdate.newLatLng(_currentPosition),
+    mapController.animateCamera(
+      CameraUpdate.newLatLng(_currentPosition),
     );
   }
 
-
+@override
+void dispose() {
+    //mapController.dispose();
+    //location.onLocationChanged.drain();
+    super.dispose();
+}
 
   @override
   Widget build(BuildContext context) {
+    //AutomaticKeepAliveClientMixin requires this to keep its state
+    super.build(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Finder"),
-        backgroundColor: Colors.blueAccent,
-      ),
       body: _mapIsLoading ? const Center(child: CircularProgressIndicator())
           : GoogleMap(
-          initialCameraPosition: CameraPosition(target: _currentPosition,
-          zoom: 16.0,
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition,
+              zoom: 14.0,
+            ),
+            markers: _markers,
+            myLocationEnabled: true,
+            mapType: MapType.normal,
           ),
-        markers: _markers,
-        myLocationEnabled: true,
-        mapType: MapType.normal,
-      ),
     );
   }
+  //foreces the map to keep its state even when leaving the screen.
+  @override
+  bool get wantKeepAlive => true;
 }

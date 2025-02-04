@@ -49,7 +49,7 @@ class _FinderPageState extends State<FinderPage> with AutomaticKeepAliveClientMi
   Future<void> _initializeMapData() async {
     _tempLocationSet();
     //await _requestLocation();
-    await RestroomService.loadRestroomsFromAPI();
+    await RestroomService.loadRestroomsFromAPI(_currentPosition);
     await _loadRestroomsToMap();
     _dataLoaded = true;
   }

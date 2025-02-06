@@ -107,6 +107,9 @@ class RestroomService {
           'country': restroom['country'],
           'created_at': restroom['created_at'],
           'distance': restroom['distance'],
+          'changing_table': restroom['changing_table'],
+          'downvote': restroom['downvote'],
+          'upvote': restroom['upvote'],
         });
 
         // print for confirmation of saved restroom

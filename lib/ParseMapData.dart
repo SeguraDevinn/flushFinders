@@ -35,7 +35,7 @@ class RestroomService {
         "lat": location.latitude.toString(),
         "lng": location.longitude.toString(),
         "page": "1",
-        "per_page": "25",
+        "per_page": "50",
         "offset": "0",
       };
 

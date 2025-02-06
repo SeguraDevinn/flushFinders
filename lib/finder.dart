@@ -1,4 +1,5 @@
 import 'ParseMapData.dart';
+import 'review_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -88,95 +89,181 @@ class _FinderPageState extends State<FinderPage>
     }
   }
 
-  void _showRestroomDetails(
-      BuildContext context, Map<String, dynamic> restroom) {
-    //Todo: Change so that can still move map even when on a marker.
+  void _showRestroomDetails(BuildContext context, Map<String, dynamic> restroom) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      isScrollControlled: true,  // Allows the content to scroll
+      backgroundColor: Colors.transparent, // Make the background transparent
       builder: (BuildContext context) {
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                //Row start for name of location and accessiblilty
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      restroom['name'] ?? "Restroom Info",
-                      style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    //Ammenities start
-                    Row(
-                      children: [
-                        if (restroom['accessible'] == true)
-                          Icon(Icons.accessible, color: Colors.green),
-                        if (restroom['unisex'] == true)
-                          Row(
-                            children: [
-                              Icon(Icons.male, color: Colors.green),
-                              Text('|', style: TextStyle(color: Colors.green)),
-                              Icon(Icons.female, color: Colors.green),
-                            ],
-                          ),
-                        if (restroom['changing_table'] == true)
-                          Icon(Icons.child_care, color: Colors.green),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Text(
-                  "Comment: ${restroom['comment'] ?? 'No comment available'}",
-                  style: TextStyle(fontSize: 16),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  "Directions: ${restroom['directions'] ?? "No directions avaliable"}",
-                  style: TextStyle(fontSize: 16),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 8),
-                Row(
-                  children: [
-                    /// TODO: Change this to a toilet paper and add
-                    ///       reviews when integrated
-                    Icon(Icons.star, color: Colors.amber),
-                  ],
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Flexible(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: ADD LOGIC HERE
-                        },
-                        child: Text("Review"),
+        return DraggableScrollableSheet(
+          initialChildSize: 0.3, // Start with 30% height of the screen
+          minChildSize: 0.3, // Minimum height when collapsed
+          maxChildSize: 0.9, // Maximum height when fully expanded (90% of screen height)
+          builder: (BuildContext context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // White background for the content
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              ),
+              child: Column(
+                children: [
+                  // Handle line to indicate swipe-up functionality
+                  Container(
+                    width: 75,  // Width of the handle line
+                    height: 3,  // Height of the handle line
+                    color: Colors.grey[300],  // Light grey color for the handle
+                    margin: EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  // Main content of the modal
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: scrollController, // Allows smooth scrolling
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Row for name of location and accessibility
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Make the name scrollable if it's too long
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,  // Horizontal scroll
+                                    child: Text(
+                                      restroom['name'] ?? "Restroom Info",
+                                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ),
+                                ),
+                                // Amenities row (icons)
+                                Row(
+                                  children: [
+                                    if (restroom['accessible'] == true)
+                                      Icon(Icons.accessibility, color: Colors.green),
+                                    if (restroom['unisex'] == true)
+                                      Row(
+                                        children: [
+                                          Icon(Icons.male, color: Colors.green),
+                                          Text('|', style: TextStyle(color: Colors.green)),
+                                          Icon(Icons.female, color: Colors.green),
+                                        ],
+                                      ),
+                                    if (restroom['changing_table'] == true)
+                                      Icon(Icons.child_care, color: Colors.green),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                // Placeholder for star rating
+                                Icon(Icons.star, color: Colors.amber),
+                              ],
+                            ),
+                            SizedBox(height: 16),
+                            // Directions and Review buttons on the same height with small space between
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal, // Scroll horizontally
+                              child: Row(
+                                children: [
+                                  // Directions button start
+                                  ElevatedButton(
+                                    onPressed: () => _launchMapsDirections(
+                                        restroom['latitude'], restroom['longitude']),
+                                    child: Text("Get Directions"),
+                                  ),
+                                  SizedBox(width: 8), // Horizontal space between the buttons
+                                  // Review button start
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      // TODO: ADD LOGIC FOR REVIEW BUTTON
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => ReviewPage(
+                                              restroomId : restroom['id'],
+                                              restroomName: restroom['name'],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text("Review"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            // TabBar for Overview and Reviews
+                            DefaultTabController(
+                              length: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TabBar(
+                                    tabs: [
+                                      Tab(text: "Overview"),
+                                      Tab(text: "Reviews"),
+                                    ],
+                                  ),
+                                  Container(
+                                    height: 300, // Set a fixed height for the TabBarView
+                                    child: TabBarView(
+                                      children: [
+                                        // Overview Tab Content
+                                        SingleChildScrollView(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "In store directions: ${restroom['directions']?.isNotEmpty == true ? restroom['directions'] : "No directions available"}",
+                                                  style: TextStyle(fontSize: 16),
+                                                  maxLines: 4,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                SizedBox(height: 16),
+                                                Text(
+                                                  "Comment: ${restroom['comment']?.isNotEmpty == true ? restroom['comment'] : 'No comments available'}",
+                                                  style: TextStyle(fontSize: 16),
+                                                  maxLines: 4,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Center(
+                                          child: Text("No reviews available"),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            // Suggest an Edit Button that appears at the bottom
+                            ElevatedButton(
+                              onPressed: () {
+                                // TODO: ADD LOGIC FOR "Suggest an edit"
+                              },
+                              child: Text("Suggest an edit"),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    SizedBox(width: 10),
-                  ],
-                ),
-                SizedBox(height: 16),
-                // Directions button
-                ElevatedButton(
-                  onPressed: () => _launchMapsDirections(
-                      restroom['latitude'], restroom['longitude']),
-                  child: Text("Get Directions"),
-                ),
-              ],
-            ),
-          ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );

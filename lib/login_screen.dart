@@ -39,22 +39,9 @@ class _LoginPageState extends State<LoginPage> {
         );
       } on FirebaseAuthException catch (e) {
         String message;
-        // Error handling
         switch (e.code) {
-          case 'invalid-email':
-            message = 'The email address is not valid.';
-            break;
-          case 'user-disabled':
-            message = 'This user account has been disabled.';
-            break;
-          case 'user-not-found':
-            message = 'No user found with this email.';
-            break;
-          case 'wrong-password':
-            message = 'Incorrect password. Please try again.';
-            break;
-          case 'weak-password':
-            message = 'The password provided is too weak.';
+          case 'invalid-credential':
+            message = 'Email or password is incorrect.';
             break;
           case 'email-already-in-use':
             message = 'An account already exists with this email.';
@@ -62,8 +49,6 @@ class _LoginPageState extends State<LoginPage> {
           default:
             message = 'An unknown error occurred. Please try again.';
         }
-
-        // Show a SnackBar with the custom error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
@@ -82,13 +67,40 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // Function will handle the forgot password logic
+  Future<void> _forgotPassword() async {
+    String email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your email address above to reset your password.'),
+        ),
+      );
+      return;
+    }
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset email sent! Check your email.')),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.message}')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An error occurred. Please try again.')),
+      );
+    }
+  }
+
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
         centerTitle: true,
       ),
       body: Padding(
@@ -101,7 +113,7 @@ class _LoginPageState extends State<LoginPage> {
               // Email Field
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
                 ),
@@ -115,12 +127,12 @@ class _LoginPageState extends State<LoginPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
 
               // Password Field
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(),
                 ),
@@ -134,52 +146,60 @@ class _LoginPageState extends State<LoginPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
 
               // Login Button
               ElevatedButton(
-                  onPressed: _login,
-                  child: Text('Login'),
+                onPressed: _login,
+                child: const Text('Login'),
               ),
+              const SizedBox(height: 16.0),
 
-              SizedBox(height: 16.0),
+
+
+              const SizedBox(height: 16.0),
 
               // Divider
               Divider(thickness: 1, color: Colors.grey[400]),
 
-              // Apple sign in Placeholder
+              // Apple Sign-In Placeholder
               ElevatedButton.icon(
                 onPressed: () {
                   // TODO: Implement Sign in with Apple
                 },
-                icon: Icon(Icons.apple, color: Colors.white),
-                label: Text('Sign in with Apple'),
+                icon: const Icon(Icons.apple, color: Colors.white),
+                label: const Text('Sign in with Apple'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
                 ),
               ),
-              SizedBox(height: 8.0),
+              const SizedBox(height: 8.0),
 
-              // Google sign in Placeholder
+              // Google Sign-In Placeholder
               ElevatedButton.icon(
                 onPressed: () {
                   // TODO: Implement Sign in with Google
                 },
-                icon: Icon(Icons.g_mobiledata, color: Colors.white),
-                label: Text('Sign in with Google'),
+                icon: const Icon(Icons.g_mobiledata, color: Colors.white),
+                label: const Text('Sign in with Google'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               TextButton(
-                onPressed:() {
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => RegistrationPage()),
                   );
                 },
-                child: Text("Don't have an account? Create one here!"),
+                child: const Text("Don't have an account? Create one here!"),
+              ),
+              // Forgot Password Link
+              TextButton(
+                onPressed: _forgotPassword,
+                child: const Text('Forgot Password?'),
               ),
             ],
           ),

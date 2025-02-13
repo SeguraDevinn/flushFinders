@@ -86,6 +86,48 @@ class _FinderPageState extends State<FinderPage>
   }
 
   void _showRestroomDetails(BuildContext context, Map<String, dynamic> restroom) {
+    // Helper function to build the star rating widget.
+    Widget _buildRatingStars(Map<String, dynamic> restroom) {
+      if (restroom.containsKey('averageRating') && restroom['averageRating'] != null) {
+        double avgRating = 0.0;
+        try {
+          avgRating = (restroom['averageRating'] as num).toDouble();
+        } catch (e) {
+          avgRating = 0.0;
+        }
+        List<Widget> stars = [];
+        for (int i = 1; i <= 5; i++) {
+          if (avgRating >= i) {
+            stars.add(const Icon(Icons.star, color: Colors.amber));
+          } else if (avgRating > i - 1 && avgRating < i) {
+            stars.add(const Icon(Icons.star_half, color: Colors.amber));
+          } else {
+            stars.add(const Icon(Icons.star_border, color: Colors.grey));
+          }
+        }
+        return Row(
+          children: [
+            ...stars,
+            const SizedBox(width: 8),
+            Text(avgRating.toStringAsFixed(1)),
+          ],
+        );
+      } else {
+        // No rating exists: show 5 gray stars and a message.
+        return Row(
+          children: const [
+            Icon(Icons.star_border, color: Colors.grey),
+            Icon(Icons.star_border, color: Colors.grey),
+            Icon(Icons.star_border, color: Colors.grey),
+            Icon(Icons.star_border, color: Colors.grey),
+            Icon(Icons.star_border, color: Colors.grey),
+            SizedBox(width: 8),
+            Text("(no ratings yet)", style: TextStyle(color: Colors.grey)),
+          ],
+        );
+      }
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allows the content to scroll
@@ -108,7 +150,7 @@ class _FinderPageState extends State<FinderPage>
                     width: 75, // Width of the handle line
                     height: 3, // Height of the handle line
                     color: Colors.grey[300], // Light grey color for the handle
-                    margin: EdgeInsets.symmetric(vertical: 8),
+                    margin: const EdgeInsets.symmetric(vertical: 8),
                   ),
                   // Main content of the modal
                   Expanded(
@@ -129,7 +171,7 @@ class _FinderPageState extends State<FinderPage>
                                     scrollDirection: Axis.horizontal, // Horizontal scroll
                                     child: Text(
                                       restroom['name'] ?? "Restroom Info",
-                                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                     ),
@@ -139,30 +181,25 @@ class _FinderPageState extends State<FinderPage>
                                 Row(
                                   children: [
                                     if (restroom['accessible'] == true)
-                                      Icon(Icons.accessibility, color: Colors.green),
+                                      const Icon(Icons.accessibility, color: Colors.green),
                                     if (restroom['unisex'] == true)
                                       Row(
-                                        children: [
+                                        children: const [
                                           Icon(Icons.male, color: Colors.green),
                                           Text('|', style: TextStyle(color: Colors.green)),
                                           Icon(Icons.female, color: Colors.green),
                                         ],
                                       ),
                                     if (restroom['changing_table'] == true)
-                                      Icon(Icons.child_care, color: Colors.green),
+                                      const Icon(Icons.child_care, color: Colors.green),
                                   ],
                                 ),
                               ],
                             ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                // Placeholder for star rating
-                                Icon(Icons.star, color: Colors.amber),
-                                // You could display an average rating here if available.
-                              ],
-                            ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 8),
+                            // Star rating row based on the average rating
+                            _buildRatingStars(restroom),
+                            const SizedBox(height: 16),
                             // Directions and Review buttons on the same row
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal, // Scroll horizontally
@@ -172,9 +209,9 @@ class _FinderPageState extends State<FinderPage>
                                   ElevatedButton(
                                     onPressed: () => _launchMapsDirections(
                                         restroom['latitude'], restroom['longitude']),
-                                    child: Text("Get Directions"),
+                                    child: const Text("Get Directions"),
                                   ),
-                                  SizedBox(width: 8), // Space between buttons
+                                  const SizedBox(width: 8), // Space between buttons
                                   // Review button
                                   ElevatedButton(
                                     onPressed: () {
@@ -188,19 +225,19 @@ class _FinderPageState extends State<FinderPage>
                                         ),
                                       );
                                     },
-                                    child: Text("Review"),
+                                    child: const Text("Review"),
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             // TabBar for Overview and Reviews
                             DefaultTabController(
                               length: 2,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  TabBar(
+                                  const TabBar(
                                     tabs: [
                                       Tab(text: "Overview"),
                                       Tab(text: "Reviews"),
@@ -219,14 +256,14 @@ class _FinderPageState extends State<FinderPage>
                                               children: [
                                                 Text(
                                                   "In store directions: ${restroom['directions']?.isNotEmpty == true ? restroom['directions'] : "No directions available"}",
-                                                  style: TextStyle(fontSize: 16),
+                                                  style: const TextStyle(fontSize: 16),
                                                   maxLines: 4,
                                                   overflow: TextOverflow.ellipsis,
                                                 ),
-                                                SizedBox(height: 16),
+                                                const SizedBox(height: 16),
                                                 Text(
                                                   "Comment: ${restroom['comment']?.isNotEmpty == true ? restroom['comment'] : 'No comments available'}",
-                                                  style: TextStyle(fontSize: 16),
+                                                  style: const TextStyle(fontSize: 16),
                                                   maxLines: 4,
                                                   overflow: TextOverflow.ellipsis,
                                                 ),
@@ -244,17 +281,17 @@ class _FinderPageState extends State<FinderPage>
                                               .snapshots(),
                                           builder: (context, snapshot) {
                                             if (snapshot.connectionState == ConnectionState.waiting) {
-                                              return Center(child: CircularProgressIndicator());
+                                              return const Center(child: CircularProgressIndicator());
                                             }
                                             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                                              return Center(child: Text("No reviews available"));
+                                              return const Center(child: Text("No reviews available"));
                                             }
                                             return ListView.builder(
                                               itemCount: snapshot.data!.docs.length,
                                               itemBuilder: (context, index) {
                                                 // Get the review document data
                                                 var reviewDoc = snapshot.data!.docs[index];
-                                                var reviewData = reviewDoc.data() as Map<String, dynamic>;
+                                                var reviewData = reviewDoc.data();
                                                 // Extract information; adjust as needed
                                                 double rating = (reviewData['rating'] is int)
                                                     ? (reviewData['rating'] as int).toDouble()
@@ -263,9 +300,9 @@ class _FinderPageState extends State<FinderPage>
                                                 List<dynamic> pros = reviewData['pros'] ?? [];
                                                 List<dynamic> cons = reviewData['cons'] ?? [];
                                                 return Card(
-                                                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                   child: ListTile(
-                                                    leading: Icon(Icons.star, color: Colors.amber),
+                                                    leading: const Icon(Icons.star, color: Colors.amber),
                                                     title: Text("Rating: $rating"),
                                                     subtitle: Column(
                                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,13 +324,13 @@ class _FinderPageState extends State<FinderPage>
                                 ],
                               ),
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             // Suggest an Edit Button at the bottom
                             ElevatedButton(
                               onPressed: () {
                                 // TODO: ADD LOGIC FOR "Suggest an edit"
                               },
-                              child: Text("Suggest an edit"),
+                              child: const Text("Suggest an edit"),
                             ),
                           ],
                         ),

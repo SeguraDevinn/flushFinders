@@ -18,6 +18,20 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
+  void _reportProblem(BuildContext context) {
+    // Implement your report a problem logic here
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Report Problem Selected")),
+    );
+  }
+
+  void _showHelp(BuildContext context) {
+    // Implement your help logic here
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Help selected")),
+    );
+  }
+
   Future<List<Map<String, dynamic>>> getUserReviews(String userId) async {
     try {
       final userRef = _firestore.collection('Users').doc(userId);
@@ -47,9 +61,32 @@ class ProfilePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Flush Finders"),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _logout(context),
+          // Hamburger menu
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.menu),
+            onSelected: (String value) {
+              if (value == 'Sign Out') {
+                _logout(context);
+              } else if (value == 'Report a Problem') {
+                _reportProblem(context);
+              } else if (value == 'Help') {
+                _showHelp(context);
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'Report a Problem',
+                child: Text('Report a Problem'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'Help',
+                child: Text('Help'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'Sign Out',
+                child: Text('Sign Out'),
+              ),
+            ],
           ),
         ],
       ),
@@ -159,7 +196,6 @@ class ProfilePage extends StatelessWidget {
             );
           }
 
-          // Fallback if no data exists
           debugPrint('User data not found for UID: ${user.uid}');
           return const Center(child: CircularProgressIndicator());
         },

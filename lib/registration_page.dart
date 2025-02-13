@@ -66,6 +66,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
       'dateCreated': FieldValue.serverTimestamp(),
       'reviewCount': 0,
     });
+
+    //initialize the users subcollection 'reviews'
+    await _firestore.collection('Users').doc(user.uid).collection('reviews').doc('initialDoc').set({
+      //init as empty since no reviews yet
+      'intial' : true,
+    });
   }
 
 

@@ -29,7 +29,6 @@ class RestroomService {
     try {
       final dio = Dio();
 
-      print("APIKEY: ${apiKey}");
 
       final queryParams = {
         "lat": location.latitude.toString(),

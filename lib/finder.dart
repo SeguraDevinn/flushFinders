@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:geolocator/geolocator.dart' as geo;
-import 'package:location/location.dart' as loc;
 import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform;
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class FinderPage extends StatefulWidget {
   const FinderPage({super.key});
@@ -21,12 +21,9 @@ class _FinderPageState extends State<FinderPage>
     with AutomaticKeepAliveClientMixin {
   final RestroomService _restroomService = RestroomService();
   late GoogleMapController mapController;
-  late LatLng _currentPosition;
+  late LatLng _currentPosition =LatLng(33.93174, -117.425221);
   bool _mapIsLoading = true;
   late bool _serviceEnabled;
-  late loc.PermissionStatus _permissionGranted;
-  late loc.LocationData _locationData;
-  late loc.Location location;
   Set<Marker> _markers = {};
   bool _dataLoaded = false;
 
@@ -41,7 +38,6 @@ class _FinderPageState extends State<FinderPage>
   @override
   void initState() {
     super.initState();
-    location = loc.Location();
     // check to see if the data is already loaded, if it is then skip, else init
     if (!_dataLoaded) {
       _initializeMapData();
@@ -50,15 +46,15 @@ class _FinderPageState extends State<FinderPage>
 
   Future<void> _initializeMapData() async {
     _tempLocationSet();
-    //await _requestLocation();
-    await _loadRestroomsToMap();
+    //await _loadRestroomsToMap();
     //TODO: make sure to uncomment this for API to work. Also, pull from firebase then check api, then pull from database again.
     //await RestroomService.loadRestroomsFromAPI(_currentPosition);
+    await _loadRestroomsToMap();
     _dataLoaded = true;
   }
 
   void _tempLocationSet() {
-    //set the state of the maplaoding and set current pos
+    //set the state of the map loading and set current pos
     _mapIsLoading = false;
     _currentPosition = LatLng(33.93174, -117.425221);
   }
@@ -92,7 +88,7 @@ class _FinderPageState extends State<FinderPage>
   void _showRestroomDetails(BuildContext context, Map<String, dynamic> restroom) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,  // Allows the content to scroll
+      isScrollControlled: true, // Allows the content to scroll
       backgroundColor: Colors.transparent, // Make the background transparent
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
@@ -109,9 +105,9 @@ class _FinderPageState extends State<FinderPage>
                 children: [
                   // Handle line to indicate swipe-up functionality
                   Container(
-                    width: 75,  // Width of the handle line
-                    height: 3,  // Height of the handle line
-                    color: Colors.grey[300],  // Light grey color for the handle
+                    width: 75, // Width of the handle line
+                    height: 3, // Height of the handle line
+                    color: Colors.grey[300], // Light grey color for the handle
                     margin: EdgeInsets.symmetric(vertical: 8),
                   ),
                   // Main content of the modal
@@ -130,7 +126,7 @@ class _FinderPageState extends State<FinderPage>
                                 // Make the name scrollable if it's too long
                                 Expanded(
                                   child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,  // Horizontal scroll
+                                    scrollDirection: Axis.horizontal, // Horizontal scroll
                                     child: Text(
                                       restroom['name'] ?? "Restroom Info",
                                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -163,31 +159,31 @@ class _FinderPageState extends State<FinderPage>
                               children: [
                                 // Placeholder for star rating
                                 Icon(Icons.star, color: Colors.amber),
+                                // You could display an average rating here if available.
                               ],
                             ),
                             SizedBox(height: 16),
-                            // Directions and Review buttons on the same height with small space between
+                            // Directions and Review buttons on the same row
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal, // Scroll horizontally
                               child: Row(
                                 children: [
-                                  // Directions button start
+                                  // Directions button
                                   ElevatedButton(
                                     onPressed: () => _launchMapsDirections(
                                         restroom['latitude'], restroom['longitude']),
                                     child: Text("Get Directions"),
                                   ),
-                                  SizedBox(width: 8), // Horizontal space between the buttons
-                                  // Review button start
+                                  SizedBox(width: 8), // Space between buttons
+                                  // Review button
                                   ElevatedButton(
                                     onPressed: () {
-                                      // TODO: ADD LOGIC FOR REVIEW BUTTON
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                            builder: (context) => ReviewPage(
-                                              restroomId : restroom['id'],
-                                              restroomName: restroom['name'],
+                                          builder: (context) => ReviewPage(
+                                            restroomId: restroom['id'],
+                                            restroomName: restroom['name'],
                                           ),
                                         ),
                                       );
@@ -211,7 +207,7 @@ class _FinderPageState extends State<FinderPage>
                                     ],
                                   ),
                                   Container(
-                                    height: 300, // Set a fixed height for the TabBarView
+                                    height: 300, // Fixed height for the TabBarView
                                     child: TabBarView(
                                       children: [
                                         // Overview Tab Content
@@ -238,8 +234,52 @@ class _FinderPageState extends State<FinderPage>
                                             ),
                                           ),
                                         ),
-                                        Center(
-                                          child: Text("No reviews available"),
+                                        // Reviews Tab Content
+                                        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                                          stream: FirebaseFirestore.instance
+                                              .collection('restrooms')
+                                              .doc(restroom['id'].toString())
+                                              .collection('reviews')
+                                              .orderBy('timestamp', descending: true)
+                                              .snapshots(),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState == ConnectionState.waiting) {
+                                              return Center(child: CircularProgressIndicator());
+                                            }
+                                            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                                              return Center(child: Text("No reviews available"));
+                                            }
+                                            return ListView.builder(
+                                              itemCount: snapshot.data!.docs.length,
+                                              itemBuilder: (context, index) {
+                                                // Get the review document data
+                                                var reviewDoc = snapshot.data!.docs[index];
+                                                var reviewData = reviewDoc.data() as Map<String, dynamic>;
+                                                // Extract information; adjust as needed
+                                                double rating = (reviewData['rating'] is int)
+                                                    ? (reviewData['rating'] as int).toDouble()
+                                                    : (reviewData['rating'] as double);
+                                                String comment = reviewData['comment'] ?? "";
+                                                List<dynamic> pros = reviewData['pros'] ?? [];
+                                                List<dynamic> cons = reviewData['cons'] ?? [];
+                                                return Card(
+                                                  margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  child: ListTile(
+                                                    leading: Icon(Icons.star, color: Colors.amber),
+                                                    title: Text("Rating: $rating"),
+                                                    subtitle: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        if (comment.isNotEmpty) Text("Comment: $comment"),
+                                                        if (pros.isNotEmpty) Text("Pros: ${pros.join(', ')}"),
+                                                        if (cons.isNotEmpty) Text("Cons: ${cons.join(', ')}"),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
                                         ),
                                       ],
                                     ),
@@ -248,7 +288,7 @@ class _FinderPageState extends State<FinderPage>
                               ),
                             ),
                             SizedBox(height: 16),
-                            // Suggest an Edit Button that appears at the bottom
+                            // Suggest an Edit Button at the bottom
                             ElevatedButton(
                               onPressed: () {
                                 // TODO: ADD LOGIC FOR "Suggest an edit"
@@ -287,34 +327,6 @@ class _FinderPageState extends State<FinderPage>
     }
   }
 
-  Future<void> _requestLocation() async {
-    _serviceEnabled = await location.serviceEnabled();
-
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        _getUserLocation();
-        return;
-      }
-    }
-  }
-
-  Future<void> _getUserLocation() async {
-    try {
-      geo.Position position = await geo.Geolocator.getCurrentPosition(
-        desiredAccuracy: geo.LocationAccuracy.best,
-      );
-
-      _currentPosition = LatLng(position.latitude, position.longitude);
-      _mapIsLoading = false;
-
-      mapController.animateCamera(
-        CameraUpdate.newLatLng(_currentPosition),
-      );
-    } catch (e) {
-      print("Error fetching Location $e");
-    }
-  }
 
   void _moveToUserLocation() {
     mapController.animateCamera(
@@ -325,7 +337,6 @@ class _FinderPageState extends State<FinderPage>
   @override
   void dispose() {
     //mapController.dispose();
-    //location.onLocationChanged.drain();
     super.dispose();
   }
 

@@ -18,6 +18,23 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
+  Future<List<Map<String, dynamic>>> getUserReviews(String userId) async {
+    try {
+      final userRef = _firestore.collection('Users').doc(userId);
+      final reviewsSnapshot = await userRef.collection('reviews').get();
+
+      List<Map<String, dynamic>> reviews = [];
+      reviewsSnapshot.docs.forEach((doc) {
+        reviews.add(doc.data());
+      });
+
+      return reviews;
+    } catch (e) {
+      print("Error retrieving user reviews: $e");
+      return [];
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     User? user = _auth.currentUser;

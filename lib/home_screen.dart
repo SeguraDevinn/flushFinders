@@ -4,9 +4,9 @@ import 'location_helpers/location_request.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'profile_page.dart';
 import 'finder.dart';
+import 'banner_ad_widget.dart';
 
 class HomeScreen extends StatefulWidget {
-
   const HomeScreen({super.key});
 
   @override
@@ -18,42 +18,49 @@ class _HomePageState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     FinderPage(),
-    const PlaceHolderWidget("Rewards Page"),
     ProfilePage(),
+    const PlaceHolderWidget("Rewards Page"),
   ];
 
-
-
   @override
-  void initState() {
-    super.initState();
-
-
+  void dispose() {
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.square),
-            label: "Finder",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.square),
-            label: "Rewards",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.square),
-            label: "Profile",
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          BannerAdWidget(),
+          BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              if (mounted) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              }
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.square),
+                label: "Finder",
+              ),
+              // BottomNavigationBarItem(
+              //   icon: Icon(Icons.square),
+              //   label: "Rewards",
+              // ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.square),
+                label: "Profile",
+              ),
+            ],
           ),
         ],
       ),

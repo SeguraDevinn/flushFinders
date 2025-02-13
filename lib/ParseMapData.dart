@@ -5,6 +5,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 /*
 *  This function is almost done, when I get back to this I need to
 * make a fake call with the trail data.json and then from there I will decode
@@ -20,20 +22,56 @@ class RestroomService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static final String? userId = FirebaseAuth.instance.currentUser?.uid;
   static final String? email = FirebaseAuth.instance.currentUser?.email;
+  static final String apiString = "https://zylalabs.com/api/2086/available+public+bathrooms+api/1869/get+public+bathrooms";
+  static final String apiKey = "6618|0ltrIgVS8Ie1Ltcie3gh0ndvqXLTKDYM9Bt0YLO5";
 
-
-  static Future<void> loadRestroomsFromAPI() async {
+  static Future<void> loadRestroomsFromAPI(LatLng location) async {
     try {
-      String jsonString = await rootBundle.loadString('/Users/devinnsegura/StudioProjects/Flush_Finders/assets/trialData.json');
+      final dio = Dio();
 
-      //Decode the json file
-      List<dynamic> restrooms = json.decode(jsonString);
 
-      //call save function to put in firebase
-      await saveRestroomsToDatabase(restrooms);
-      print("data successfully saved");
-    } catch (e) {
-      print('error loading or saving the restroms data: $e');
+      final queryParams = {
+        "lat": location.latitude.toString(),
+        "lng": location.longitude.toString(),
+        "page": "1",
+        "per_page": "50",
+        "offset": "0",
+      };
+
+      final fullRequestUrl = "$apiString?${Uri(queryParameters: queryParams).query}";
+      print("Request URL: $fullRequestUrl");
+
+      final response = await dio.get(
+        apiString,
+        queryParameters: queryParams,
+        options: Options(
+          headers: {"Authorization": "Bearer $apiKey"},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        if (response.data is List) {
+          // Decode the json file if it's a list
+          List<dynamic> restrooms = response.data;
+
+          // Call save function to put data in firebase or another database
+          await saveRestroomsToDatabase(restrooms);
+          print("Data successfully saved.");
+        } else {
+          print("Unexpected response format: ${response.data}");
+        }
+      } else {
+        print("Error fetching data: ${response.statusCode} - ${response.statusMessage}");
+      }
+    } on DioException catch (e) {
+      // Print detailed error information from DioException
+      print('DioException: ${e.response?.statusCode} ${e.response?.statusMessage}');
+      print('Error Message: ${e.message}');
+      print('StackTrace: ${e.stackTrace}');
+    } catch (e, stackTrace) {
+      // Catch any other type of error (e.g., network issues, unexpected errors)
+      print('Error: $e');
+      print('StackTrace: $stackTrace');
     }
   }
 
@@ -68,6 +106,9 @@ class RestroomService {
           'country': restroom['country'],
           'created_at': restroom['created_at'],
           'distance': restroom['distance'],
+          'changing_table': restroom['changing_table'],
+          'downvote': restroom['downvote'],
+          'upvote': restroom['upvote'],
         });
 
         // print for confirmation of saved restroom

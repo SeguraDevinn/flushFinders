@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({Key? key}) : super(key: key);
@@ -11,13 +12,14 @@ class BannerAdWidget extends StatefulWidget {
 class _BannerAdWidgetState extends State<BannerAdWidget> {
   BannerAd? _bannerAd;
   bool _isAdLoaded = false;
+  String adId = dotenv.env['GOOGLE_AD_BANNER_1'] ?? '';
 
   @override
   void initState() {
     super.initState();
 
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-7392479302292783/3384837540',
+      adUnitId: adId,
       size: AdSize.banner,
       request: AdRequest(),
       listener: BannerAdListener(

@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 /*
 *  This function is almost done, when I get back to this I need to
 * make a fake call with the trail data.json and then from there I will decode
@@ -23,7 +24,7 @@ class RestroomService {
   static final String? userId = FirebaseAuth.instance.currentUser?.uid;
   static final String? email = FirebaseAuth.instance.currentUser?.email;
   static final String apiString = "https://zylalabs.com/api/2086/available+public+bathrooms+api/1869/get+public+bathrooms";
-  static final String apiKey = "6618|0ltrIgVS8Ie1Ltcie3gh0ndvqXLTKDYM9Bt0YLO5";
+  static final String apiKey = dotenv.env['ZYLA_API_KEY'] ?? '';
 
   static Future<void> loadRestroomsFromAPI(LatLng location) async {
     try {

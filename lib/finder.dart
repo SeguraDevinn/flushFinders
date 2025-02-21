@@ -48,7 +48,7 @@ class _FinderPageState extends State<FinderPage>
     _tempLocationSet();
     await _loadRestroomsToMap();
     //TODO: make sure to uncomment this for API to work. Also, pull from firebase then check api, then pull from database again.
-    await RestroomService.loadRestroomsFromAPI(_currentPosition);
+    //await RestroomService.loadRestroomsFromAPI(_currentPosition);
     await _loadRestroomsToMap();
     _dataLoaded = true;
   }

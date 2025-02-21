@@ -26,8 +26,8 @@
 	<string>prj_test_pk_8a63cc917387e0f16a796e8a61b3eb0c3660ef6f</string>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
-	<key>GMSApiKey</key>
-	<string>AIzaSyBnebMN9zp1L2BwMfcYwHn1HvbuG4MKDLU</string>
+	<key>GOOGLE_MAPS_API_KEY</key>
+    <string>AIzaSyDymKSBvWKznCVX51GFL1jS63lPF24GPWw</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need your location to help you find nearby restrooms.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

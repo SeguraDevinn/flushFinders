@@ -79,9 +79,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     // Initialize the reviews subcollection for the user.
     DocumentReference initialReviewRef = userRef.collection('reviews').doc('initialDoc');
-    batch.set(initialReviewRef, {
-      'initial': true,
-    });
+
 
     // Commit both writes atomically.
     await batch.commit();

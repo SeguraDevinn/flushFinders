@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'placeholder_widget.dart';
-import 'location_helpers/location_request.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'profile_page.dart';
 import 'finder.dart';

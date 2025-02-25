@@ -28,6 +28,7 @@ class _FinderPageState extends State<FinderPage>
   bool _mapIsLoading = true;
   Set<Marker> _markers = {};
   bool _dataLoaded = false;
+  bool _isLoadingRestrooms = false;
 
 
    Future<void> _getUserLocation() async {
@@ -83,9 +84,19 @@ class _FinderPageState extends State<FinderPage>
   }
 
   Future<void> _onSearchHerePressed() async {
+     setState(() {
+       _isLoadingRestrooms = true;
+     });
+
+
      print("Searching for restrooms here: ${_mapCenter}");
      await RestroomService.loadRestroomsFromAPI(_mapCenter);
      await _loadRestroomsToMap();
+
+     setState(() {
+       _isLoadingRestrooms = false;
+     });
+
   }
 
   @override
@@ -410,36 +421,71 @@ class _FinderPageState extends State<FinderPage>
   @override
   Widget build(BuildContext context) {
     super.build(context); // for AutomaticKeepAliveClientMixin
+
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
-      // Adding an AppBar with a search bar placeholder.
-      appBar: AppBar(
-        title: TextField(
-          decoration: const InputDecoration(
-            hintText: 'Search here...',
-            border: InputBorder.none,
-          ),
-          onChanged: (value) {
-            // Placeholder: search functionality can be implemented later.
-          },
-        ),
-      ),
-      body: _mapIsLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
+      body: Stack(
         children: [
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            onCameraMove: _onCameraMove,
-            initialCameraPosition: CameraPosition(
-              target: _currentPosition,
-              zoom: 14.0,
+          // 🔹 Google Map as the Background
+          Positioned.fill(
+            child: _mapIsLoading
+                ? const Center(child: CircularProgressIndicator()) // Show circular loading when initializing map
+                : GoogleMap(
+              onMapCreated: _onMapCreated,
+              onCameraMove: _onCameraMove,
+              initialCameraPosition: CameraPosition(
+                target: _currentPosition,
+                zoom: 15.0,
+              ),
+              markers: _markers,
+              myLocationEnabled: true,
+              mapType: MapType.normal,
             ),
-            markers: _markers,
-            myLocationEnabled: true,
-            mapType: MapType.normal,
           ),
-          // Optionally, you could add more overlay UI here.
+
+          // 🔹 Search Bar Positioned 15% Down from the Top
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.06, // 6% down from the screen height
+            left: 16,
+            right: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search here...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                onChanged: (value) {
+                  // Placeholder: Implement search functionality here
+                },
+              ),
+            ),
+          ),
+
+          // 🔹 Loading Bar (if restrooms are being loaded)
+          if (_isLoadingRestrooms)
+            Positioned(
+              top: MediaQuery.of(context).size.height * 0.12, // Below search bar
+              left: 0,
+              right: 0,
+              child: const LinearProgressIndicator(),
+            ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

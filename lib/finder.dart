@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:io' show Platform;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:geolocator/geolocator.dart';
 
 
 class FinderPage extends StatefulWidget {
@@ -21,42 +22,77 @@ class _FinderPageState extends State<FinderPage>
     with AutomaticKeepAliveClientMixin {
   final RestroomService _restroomService = RestroomService();
   late GoogleMapController mapController;
-  late LatLng _currentPosition =LatLng(33.93174, -117.425221);
-  bool _mapIsLoading = true;
   late bool _serviceEnabled;
+  late LatLng _mapCenter;
+  late LatLng _currentPosition;
+  bool _mapIsLoading = true;
   Set<Marker> _markers = {};
   bool _dataLoaded = false;
 
-/*
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-    _moveToUserLocation();
+
+   Future<void> _getUserLocation() async {
+    // update/create variables to see if location is enabled/has permission
+    _serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    LocationPermission permission;
+    // check if the service is not enabled
+    if (!_serviceEnabled) {
+      print("Location services not enabled");
+    }
+
+    // Check if location permission is enabled
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        print("Location service denied!");
+      }
+    }
+
+    //set user position
+    Position userPos = await Geolocator.getCurrentPosition();
+    if (!mounted) return; // Ensure the widget is still in the tree
+    setState(() {
+      _currentPosition = LatLng(userPos.latitude, userPos.longitude);
+      _mapCenter = _currentPosition;
+    });
+    await _initializeMapData();
+
   }
 
- */
+
+  Future<void> _initializeMapData() async {
+    await _loadRestroomsToMap();
+    if (!mounted) return;
+    setState(() {
+      _mapIsLoading = false;
+    });
+    await RestroomService.loadRestroomsFromAPI(_currentPosition);
+    await _loadRestroomsToMap();
+    _dataLoaded = true;
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+     mapController = controller;
+  }
+
+  void _onCameraMove(CameraPosition position) {
+    if (!mounted) return;
+     setState(() {
+       _mapCenter = position.target;
+     });
+  }
+
+  Future<void> _onSearchHerePressed() async {
+     print("Searching for restrooms here: ${_mapCenter}");
+     await RestroomService.loadRestroomsFromAPI(_mapCenter);
+     await _loadRestroomsToMap();
+  }
 
   @override
   void initState() {
     super.initState();
     // check to see if the data is already loaded, if it is then skip, else init
-    if (!_dataLoaded) {
-      _initializeMapData();
-    }
-  }
-
-  Future<void> _initializeMapData() async {
-    _tempLocationSet();
-    await _loadRestroomsToMap();
-    //TODO: make sure to uncomment this for API to work. Also, pull from firebase then check api, then pull from database again.
-    //await RestroomService.loadRestroomsFromAPI(_currentPosition);
-    await _loadRestroomsToMap();
-    _dataLoaded = true;
-  }
-
-  void _tempLocationSet() {
-    //set the state of the map loading and set current pos
-    _mapIsLoading = false;
-    _currentPosition = LatLng(33.93174, -117.425221);
+    _getUserLocation();
   }
 
   Future<void> _loadRestroomsToMap() async {
@@ -365,12 +401,6 @@ class _FinderPageState extends State<FinderPage>
   }
 
 
-  void _moveToUserLocation() {
-    mapController.animateCamera(
-      CameraUpdate.newLatLng(_currentPosition),
-    );
-  }
-
   @override
   void dispose() {
     //mapController.dispose();
@@ -379,24 +409,47 @@ class _FinderPageState extends State<FinderPage>
 
   @override
   Widget build(BuildContext context) {
-    //AutomaticKeepAliveClientMixin requires this to keep its state
-    super.build(context);
+    super.build(context); // for AutomaticKeepAliveClientMixin
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      // Adding an AppBar with a search bar placeholder.
+      appBar: AppBar(
+        title: TextField(
+          decoration: const InputDecoration(
+            hintText: 'Search here...',
+            border: InputBorder.none,
+          ),
+          onChanged: (value) {
+            // Placeholder: search functionality can be implemented later.
+          },
+        ),
+      ),
       body: _mapIsLoading
           ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: _currentPosition,
-                zoom: 14.0,
-              ),
-              markers: _markers,
-              myLocationEnabled: true,
-              mapType: MapType.normal,
+          : Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            onCameraMove: _onCameraMove,
+            initialCameraPosition: CameraPosition(
+              target: _currentPosition,
+              zoom: 14.0,
             ),
+            markers: _markers,
+            myLocationEnabled: true,
+            mapType: MapType.normal,
+          ),
+          // Optionally, you could add more overlay UI here.
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _onSearchHerePressed,
+        label: const Text('Search Here'),
+        icon: const Icon(Icons.search),
+      ),
     );
   }
 
-  //foreces the map to keep its state even when leaving the screen.
   @override
   bool get wantKeepAlive => true;
 }

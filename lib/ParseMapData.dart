@@ -34,9 +34,8 @@ class RestroomService {
       final queryParams = {
         "lat": location.latitude.toString(),
         "lng": location.longitude.toString(),
-        "page": "1",
-        "per_page": "50",
-        "offset": "0",
+        "radius": "100",
+
       };
 
       final fullRequestUrl = "$apiString?${Uri(queryParameters: queryParams).query}";
